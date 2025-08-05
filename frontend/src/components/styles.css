@@ -1,0 +1,12 @@
+.messages {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;          /* Use 'auto' for better behavior */
+  scrollbar-width: none;     /* Firefox: hide scrollbar */
+  -ms-overflow-style: none;  /* IE/Edge: hide scrollbar */
+}
+
+/* Chrome, Safari, Opera: hide scrollbar */
+.messages::-webkit-scrollbar {
+  display: none;
+}
