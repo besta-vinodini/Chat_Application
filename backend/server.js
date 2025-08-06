@@ -1,85 +1,90 @@
-const express=require("express");
+const express = require("express");
 const dotenv = require("dotenv");
 const { chats } = require("./data/data");
 const connectDB = require("./config/db");
 const colors = require("colors");
-const userRoutes = require('./routes/userRoutes'); 
-const chatRoutes = require('./routes/chatRoutes'); 
-const messageRoutes = require('./routes/messageRoutes'); 
+const userRoutes = require("./routes/userRoutes");
+const chatRoutes = require("./routes/chatRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 const path = require("path");
+const http = require("http");
+const cors = require("cors");
 
-const app = express();
 dotenv.config();
-
 connectDB();
 
-app.use(express.json()); // to parse incoming JSON request bodies
+const app = express();
+app.use(express.json());
 
-// app.get("/",(req,res)=> {
-//   res.send("API is Running");
-// });
+// Allow CORS for frontend (update the origin to your frontend URL on Render or localhost)
+const FRONTEND_ORIGIN =
+  process.env.FRONTEND_URL || "https://chat-application-frontend-url.onrender.com";
 
-app.use("/api/user",userRoutes);
-app.use("/api/chat",chatRoutes);
-app.use("/api/message",messageRoutes);
+app.use(
+  cors({
+    origin: FRONTEND_ORIGIN,
+    credentials: true,
+  })
+);
 
+// Routes
+app.use("/api/user", userRoutes);
+app.use("/api/chat", chatRoutes);
+app.use("/api/message", messageRoutes);
 
-// --------------------------deployment------------------------------
+// -------------------------- Deployment ------------------------------
 
 const __dirname1 = path.resolve();
 
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname1, "/frontend/build")));
+  app.use(express.static(path.join(__dirname1, "/frontend/dist")));
 
-  //app.get("*", (req, res) =>
-    //res.sendFile(path.resolve(__dirname1, "frontend", "build", "index.html"))
-  //);
+  app.get("*", (req, res) =>
+    res.sendFile(path.resolve(__dirname1, "frontend", "dist", "index.html"))
+  );
 } else {
   app.get("/", (req, res) => {
     res.send("API is running..");
   });
 }
 
-//--------------------------------------------------------------------
+// -------------------------- Error Handling ------------------------------
 
 app.use(notFound);
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
+// -------------------------- Server & Socket.io Setup ------------------------------
 
-const server =  app.listen(PORT, () => {
-                  console.log(`Server running on port ${PORT}`.yellow.bold);
-                }).on('error', (err) => {
-                if (err.code === 'EADDRINUSE') {
-                  console.log(`Port ${PORT} is already in use.`);
-                  process.exit(1);
-                  }
-                });
-const io = require("socket.io")(server,{
-  pingTimeout : 60000,
+const PORT = process.env.PORT || 5000;
+const server = http.createServer(app);
+
+const io = require("socket.io")(server, {
+  pingTimeout: 60000,
   cors: {
-    origin : "http://localhost:3000",
+    origin: FRONTEND_ORIGIN,
+    credentials: true,
   },
 });
 
-io.on("connection",(socket) => {
-  console.log("connected to socket.io");
-  
+io.on("connection", (socket) => {
+  console.log("Connected to socket.io");
+
   socket.on("setup", (userData) => {
     socket.join(userData._id);
     socket.emit("connected");
   });
+
   socket.on("join chat", (room) => {
     socket.join(room);
     console.log("User Joined Room: " + room);
   });
+
   socket.on("typing", (room) => socket.in(room).emit("typing"));
   socket.on("stop typing", (room) => socket.in(room).emit("stop typing"));
 
   socket.on("new message", (newMessageRecieved) => {
     var chat = newMessageRecieved.chat;
-
     if (!chat.users) return console.log("chat.users not defined");
 
     chat.users.forEach((user) => {
@@ -87,10 +92,15 @@ io.on("connection",(socket) => {
 
       socket.in(user._id).emit("message recieved", newMessageRecieved);
     });
+  });
+
+  socket.off("setup", () => {
+    console.log("USER DISCONNECTED");
+    socket.leave(userData._id);
+  });
 });
 
-socket.off("setup", () => {
-  console.log("USER DISCONNECTED");
-  socket.leave(userData._id);
-});
+// Start server
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`.yellow.bold);
 });
