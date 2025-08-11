@@ -7,62 +7,54 @@ const userRoutes = require("./routes/userRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
-const path = require("path");
 const http = require("http");
 const cors = require("cors");
+const path = require("path");
 
+// Load environment variables
 dotenv.config();
+
+// Connect to database
 connectDB();
 
 const app = express();
 app.use(express.json());
 
-// Allow CORS for frontend (update the origin to your frontend URL on Render or localhost)
-const FRONTEND_ORIGIN =
-  process.env.REACT_APP_API_URL || "https://chat-application-frontend-5a2a.onrender.com";
+// -------------------------- CORS SETUP ------------------------------
+const allowedOrigins = [
+  process.env.FRONTEND_URL || "https://chat-application-frontend-5a2a.onrender.com",
+  "http://localhost:3000"
+];
 
 app.use(
   cors({
-    origin:"https://chat-application-frontend-5a2a.onrender.com",
+    origin: allowedOrigins,
     credentials: true,
   })
 );
 
-// Routes
+// -------------------------- API ROUTES ------------------------------
 app.use("/api/user", userRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/message", messageRoutes);
 
-// -------------------------- Deployment ------------------------------
+// -------------------------- BASIC ROOT ROUTE ------------------------------
+app.get("/", (req, res) => {
+  res.send("API is running..");
+});
 
-const __dirname1 = path.resolve();
-
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname1, "/frontend/dist")));
-
-  app.get("*", (req, res) =>
-    res.sendFile(path.resolve(__dirname1, "frontend", "dist", "index.html"))
-  );
-} else {
-  app.get("/", (req, res) => {
-    res.send("API is running..");
-  });
-}
-
-// -------------------------- Error Handling ------------------------------
-
+// -------------------------- ERROR HANDLING ------------------------------
 app.use(notFound);
 app.use(errorHandler);
 
-// -------------------------- Server & Socket.io Setup ------------------------------
-
+// -------------------------- SERVER & SOCKET.IO ------------------------------
 const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
 
 const io = require("socket.io")(server, {
   pingTimeout: 60000,
   cors: {
-    origin: "https://chat-application-frontend-5a2a.onrender.com",
+    origin: allowedOrigins,
     credentials: true,
   },
 });
@@ -89,7 +81,6 @@ io.on("connection", (socket) => {
 
     chat.users.forEach((user) => {
       if (user._id == newMessageRecieved.sender._id) return;
-
       socket.in(user._id).emit("message recieved", newMessageRecieved);
     });
   });
@@ -100,7 +91,8 @@ io.on("connection", (socket) => {
   });
 });
 
-// Start server
+// -------------------------- START SERVER ------------------------------
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`.yellow.bold);
 });
+
