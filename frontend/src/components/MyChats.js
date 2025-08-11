@@ -45,11 +45,14 @@ const MyChats = ({ fetchAgain }) => {
   };
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("userInfo"));
-    setLoggedUser(storedUser);
+  const storedUser = JSON.parse(localStorage.getItem("userInfo"));
+  setLoggedUser(storedUser);
+  }, []); // only run once on mount
+  useEffect(() => {
+  if (loggedUser) {
     fetchChats();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchAgain]);
+  }
+  }, [loggedUser, fetchAgain]); // run when loggedUser is ready or fetchAgain changes
 
   return (
     <Box
