@@ -75,7 +75,8 @@ function SideDrawer() {
         },
       };
 
-      const { data } = await axios.get(`/api/user?search=${search}`, config);
+      const BASE_URL = process.env.REACT_APP_API_URL
+      const { data } = await axios.get(`${BASE_URL}/api/user?search=${search}`, config);
       setSearchResult(data);
     } catch (error) {
       toast({
@@ -102,7 +103,8 @@ function SideDrawer() {
         },
       };
 
-      const { data } = await axios.post(`/api/chat`, { userId }, config);
+      const BASE_URL = process.env.REACT_APP_API_URL
+      const { data } = await axios.post(`${BASE_URL}/api/chat`, { userId }, config);
 
       if (!chats.find((c) => c._id === data._id)) {
         setChats([data, ...chats]);
