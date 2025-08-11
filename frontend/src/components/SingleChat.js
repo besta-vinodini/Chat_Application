@@ -12,7 +12,8 @@ import io from "socket.io-client";
 import UpdateGroupChatModal from "./miscellaneous/UpdateGroupChatModal";
 import { ChatState } from "../Context/ChatProvider";
 
-const ENDPOINT = "http://localhost:5000";
+const API_BASE = process.env.REACT_APP_API_URL;
+const ENDPOINT = API_BASE;
 let socket;
 let selectedChatCompare;
 
@@ -46,7 +47,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
           Authorization: `Bearer ${user.token}`,
         },
       };
-      const { data } = await axios.get(`/api/message/${selectedChat._id}`, config);
+      const { data } = await axios.get(`${API_BASE}/api/message/${selectedChat._id}`, config);
       setMessages(data);
       setLoading(false);
       socket.emit("join chat", selectedChat._id);
@@ -74,7 +75,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         };
         setNewMessage("");
         const { data } = await axios.post(
-          "/api/message",
+          "${API_BASE}/api/message",
           {
             content: newMessage,
             chatId: selectedChat._id, // ✅ FIXED HERE
