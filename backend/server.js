@@ -23,7 +23,7 @@ const FRONTEND_ORIGIN =
 
 app.use(
   cors({
-    origin: FRONTEND_ORIGIN,
+    origin:"https://chat-application-frontend-5a2a.onrender.com",
     credentials: true,
   })
 );
@@ -62,7 +62,7 @@ const server = http.createServer(app);
 const io = require("socket.io")(server, {
   pingTimeout: 60000,
   cors: {
-    origin: FRONTEND_ORIGIN,
+    origin: "https://chat-application-frontend-5a2a.onrender.com",
     credentials: true,
   },
 });
