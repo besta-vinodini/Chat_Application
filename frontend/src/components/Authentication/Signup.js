@@ -59,8 +59,9 @@ const Signup = () => {
         },
       };
 
+      const BASE_URL = process.env.REACT_APP_API_URL
       const { data } = await axios.post(
-        "/api/user",
+        "${BASE_URL}/api/user",
         {
           name,
           email,
