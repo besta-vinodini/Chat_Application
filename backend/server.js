@@ -19,7 +19,7 @@ app.use(express.json());
 
 // Allow CORS for frontend (update the origin to your frontend URL on Render or localhost)
 const FRONTEND_ORIGIN =
-  process.env.FRONTEND_URL || "https://chat-application-frontend-5a2a.onrender.com";
+  process.env.REACT_APP_API_URL || "https://chat-application-frontend-5a2a.onrender.com";
 
 app.use(
   cors({
