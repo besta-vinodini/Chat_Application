@@ -21,9 +21,9 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerOverlay,
+  Badge,
 } from "@chakra-ui/react";
 import { BellIcon, ChevronDownIcon, SearchIcon } from "@chakra-ui/icons";
-import NotificationBadge, { Effect } from "react-notification-badge";
 
 import ChatLoading from "../ChatLoading";
 import ProfileModal from "./ProfileModal";
@@ -137,19 +137,41 @@ function SideDrawer() {
         boxShadow="sm"
       >
         <Tooltip label="Search Users to chat" hasArrow placement="bottom-end">
-          <Button variant="ghost" onClick={onOpen} leftIcon={<SearchIcon />} colorScheme="blue">
+          <Button
+            variant="ghost"
+            onClick={onOpen}
+            leftIcon={<SearchIcon />}
+            colorScheme="blue"
+          >
             <Text display={{ base: "none", md: "flex" }}>Search User</Text>
           </Button>
         </Tooltip>
 
-        <Text fontSize="2xl" fontWeight="bold" fontFamily="Work sans" color="blue.600">
+        <Text
+          fontSize="2xl"
+          fontWeight="bold"
+          fontFamily="Work sans"
+          color="blue.600"
+        >
           Talk-A-Tive
         </Text>
 
         <Box display="flex" alignItems="center" gap={4}>
           <Menu>
             <MenuButton p={1} position="relative">
-              <NotificationBadge count={notification.length} effect={Effect.SCALE} />
+              {notification.length > 0 && (
+                <Badge
+                  position="absolute"
+                  top="-1"
+                  right="-1"
+                  colorScheme="red"
+                  borderRadius="full"
+                  px={2}
+                  fontSize="0.8em"
+                >
+                  {notification.length}
+                </Badge>
+              )}
               <BellIcon fontSize="2xl" m={1} color="gray.700" />
             </MenuButton>
             <MenuList>
@@ -171,7 +193,12 @@ function SideDrawer() {
           </Menu>
 
           <Menu>
-            <MenuButton as={Button} bg="white" _hover={{ bg: "gray.100" }} rightIcon={<ChevronDownIcon />}>
+            <MenuButton
+              as={Button}
+              bg="white"
+              _hover={{ bg: "gray.100" }}
+              rightIcon={<ChevronDownIcon />}
+            >
               <Avatar size="sm" name={user?.name} src={user?.pic} />
             </MenuButton>
             <MenuList>
@@ -221,3 +248,4 @@ function SideDrawer() {
 }
 
 export default SideDrawer;
+
