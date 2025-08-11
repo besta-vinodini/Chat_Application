@@ -47,9 +47,10 @@ const Login = () => {
           "Content-type": "application/json",
         },
       };
-
+       
+      const API_BASE = process.env.REACT_APP_API_URL;
       const { data } = await axios.post(
-        "/api/user/login",
+        "${API_BASE}/api/user/login",
         { email, password },
         config
       );
